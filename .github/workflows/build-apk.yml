@@ -44,6 +44,14 @@ jobs:
           mv cmdline-tools latest
           rm cmdline-tools.zip
 
+      - name: Create legacy tools path for Buildozer compatibility
+        run: |
+          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+          ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager \
+                 ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/avdmanager \
+                 ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
+
       - name: Accept all Android SDK licenses
         run: |
           yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk --licenses || true
