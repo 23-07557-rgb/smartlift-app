@@ -12,7 +12,7 @@ Run this on your computer with:
     python main.py
 
 Before running, set SERVER_IP below to your Flask server's local IP
-(the one shown when you run app.py, e.g. 192.168.0.148).
+(the one shown when you run app.py, e.g. 10.165.149.150).
 """
 
 import requests
@@ -29,7 +29,7 @@ from kivy.core.window import Window
 # Configuration — change this to match your Flask server
 # ---------------------------------------------------------------------------
 
-SERVER_IP = "192.168.0.148"     # your computer's local IP running Flask
+SERVER_IP = "10.165.149.150"     # your computer's local IP running Flask
 SERVER_PORT = 5000
 STATUS_URL = f"http://{SERVER_IP}:{SERVER_PORT}/api/status"
 
