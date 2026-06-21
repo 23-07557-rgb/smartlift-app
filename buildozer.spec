@@ -19,7 +19,10 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 1.0
 
 # Application requirements — comma separated python modules
-requirements = python3,kivy,requests,certifi,charset-normalizer,idna,urllib3
+# pyjnius is required for the Android status bar color fix in main.py
+# (it lets Python call native Android APIs). Without it, that fix
+# silently no-ops and the status bar stays default black.
+requirements = python3,kivy,requests,certifi,charset-normalizer,idna,urllib3,pyjnius
 
 # Supported orientation: landscape, portrait, all
 orientation = portrait
