@@ -65,7 +65,11 @@ COLOR_AMBER_LIGHT = (1, 0.97, 0.88, 1)
 # Persisted settings (saved on-device so the IP doesn't need retyping
 # every time the app opens)
 # ---------------------------------------------------------------------------
-
+def build(self):
+    Window.size = (390, 844)   # ← add this — standard phone dimensions
+    Window.clearcolor = COLOR_BG
+    self._set_android_status_bar_color()
+    
 def _store_path():
     """Puts the settings file in the app's writable data directory on
     Android, or next to the script when running on desktop."""
@@ -185,7 +189,7 @@ class ConnectScreen(Screen):
         root.add_widget(subtitle)
 
         card = RoundedCard(orientation="vertical", padding=18, spacing=12,
-                            size_hint_y=None, height=210)
+                            size_hint_y=None, height=250)
 
         ip_label = Label(text="Server IP address", color=COLOR_TEXT_GRAY, font_size=45,
                           halign="left", size_hint_y=None, height=65)
@@ -323,7 +327,7 @@ class ElevatorCard(RoundedCard):
 
     def __init__(self, **kwargs):
         super().__init__(orientation="vertical", padding=18, spacing=10,
-                          size_hint_y=None, height=180, **kwargs)
+                          size_hint_y=None, height=240, **kwargs)
 
         section_label = Label(
             text="Elevator status",
@@ -346,7 +350,7 @@ class ElevatorCard(RoundedCard):
         )
         self.status_label.bind(size=self.status_label.setter("text_size"))
 
-        stats_row = GridLayout(cols=2, spacing=12, size_hint_y=None, height=70)
+        stats_row = GridLayout(cols=1, spacing=12, size_hint_y=None, height=120)
 
         self.occupants_value = Label(text="--", color=COLOR_TEXT_DARK,
                                       font_size=22, bold=True, halign="left", valign="top")
