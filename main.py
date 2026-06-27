@@ -168,7 +168,7 @@ class ConnectScreen(Screen):
         title = Label(
             text="SmartLift",
             color=COLOR_BLUE,
-            font_size=26,
+            font_size=86,
             bold=True,
             size_hint_y=None,
             height=40,
@@ -178,7 +178,7 @@ class ConnectScreen(Screen):
         subtitle = Label(
             text="Enter your Flask server's IP address to connect",
             color=COLOR_TEXT_GRAY,
-            font_size=13,
+            font_size=65,
             size_hint_y=None,
             height=24,
         )
@@ -187,7 +187,7 @@ class ConnectScreen(Screen):
         card = RoundedCard(orientation="vertical", padding=18, spacing=12,
                             size_hint_y=None, height=170)
 
-        ip_label = Label(text="Server IP address", color=COLOR_TEXT_GRAY, font_size=12,
+        ip_label = Label(text="Server IP address", color=COLOR_TEXT_GRAY, font_size=65,
                           halign="left", size_hint_y=None, height=16)
         ip_label.bind(size=ip_label.setter("text_size"))
         card.add_widget(ip_label)
@@ -197,7 +197,7 @@ class ConnectScreen(Screen):
             hint_text="e.g. 10.165.149.150",
             multiline=False,
             size_hint_y=None,
-            height=44,
+            height=65,
             padding=[12, 10, 12, 10],
             background_normal="",
             background_active="",
