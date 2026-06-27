@@ -189,7 +189,7 @@ class ConnectScreen(Screen):
         root.add_widget(subtitle)
 
         card = RoundedCard(orientation="vertical", padding=18, spacing=12,
-                            size_hint_y=None, height=250)
+                            size_hint_y=None, height=273)
 
         ip_label = Label(text="Server IP address", color=COLOR_TEXT_GRAY, font_size=45,
                           halign="left", size_hint_y=None, height=65)
@@ -201,7 +201,7 @@ class ConnectScreen(Screen):
             hint_text="e.g. 10.165.149.150",
             multiline=False,
             size_hint_y=None,
-            height=45,
+            height=95,
             padding=[12, 10, 12, 10],
             background_normal="",
             background_active="",
