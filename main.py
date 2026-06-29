@@ -38,9 +38,9 @@ import os
 # ---------------------------------------------------------------------------
 
 SERVER_PORT = 5000
-REFRESH_INTERVAL_SECONDS = 1    # how often the app polls the server
-REQUEST_TIMEOUT_SECONDS = 4     # how long to wait before giving up on a request
-CONNECT_TIMEOUT_SECONDS = 6     # slightly longer timeout for the initial connect test
+REFRESH_INTERVAL_SECONDS = 1
+REQUEST_TIMEOUT_SECONDS = 4
+CONNECT_TIMEOUT_SECONDS = 6
 
 FLOOR_NUMBERS = [1, 2, 3]
 
@@ -49,9 +49,9 @@ FLOOR_NUMBERS = [1, 2, 3]
 # ---------------------------------------------------------------------------
 
 COLOR_WHITE = (1, 1, 1, 1)
-COLOR_BG = (0.95, 0.96, 0.98, 1)        # very light blue-gray background
-COLOR_BLUE = (0.09, 0.37, 0.65, 1)       # primary blue (titles, badges)
-COLOR_BLUE_LIGHT = (0.90, 0.95, 1, 1)    # light blue fill (badges, info boxes)
+COLOR_BG = (0.95, 0.96, 0.98, 1)
+COLOR_BLUE = (0.09, 0.37, 0.65, 1)
+COLOR_BLUE_LIGHT = (0.90, 0.95, 1, 1)
 COLOR_TEXT_DARK = (0.13, 0.13, 0.13, 1)
 COLOR_TEXT_GRAY = (0.45, 0.45, 0.45, 1)
 COLOR_GREEN = (0.18, 0.55, 0.25, 1)
@@ -62,17 +62,10 @@ COLOR_AMBER_LIGHT = (1, 0.97, 0.88, 1)
 
 
 # ---------------------------------------------------------------------------
-# Persisted settings (saved on-device so the IP doesn't need retyping
-# every time the app opens)
+# Persisted settings
 # ---------------------------------------------------------------------------
-def build(self):
-    Window.size = (390, 844)   # ← add this — standard phone dimensions
-    Window.clearcolor = COLOR_BG
-    self._set_android_status_bar_color()
-    
+
 def _store_path():
-    """Puts the settings file in the app's writable data directory on
-    Android, or next to the script when running on desktop."""
     try:
         app = KivyApp.get_running_app()
         if app is not None and app.user_data_dir:
@@ -105,18 +98,13 @@ def save_ip(ip):
 # ---------------------------------------------------------------------------
 
 class RoundedCard(BoxLayout):
-    """A simple white card with rounded corners, used as the background
-    container for status cards and rows."""
-
     def __init__(self, bg_color=COLOR_WHITE, radius=14, **kwargs):
         super().__init__(**kwargs)
         self.bg_color = bg_color
         self.radius = radius
         with self.canvas.before:
             Color(*bg_color)
-            self.bg_rect = RoundedRectangle(
-                pos=self.pos, size=self.size, radius=[radius]
-            )
+            self.bg_rect = RoundedRectangle(pos=self.pos, size=self.size, radius=[radius])
         self.bind(pos=self._update_rect, size=self._update_rect)
 
     def _update_rect(self, *args):
@@ -125,14 +113,11 @@ class RoundedCard(BoxLayout):
 
 
 class RoundedButton(Button):
-    """A flat, rounded button matching the blue/white theme, since the
-    default Kivy button looks out of place against these cards."""
-
     def __init__(self, bg_color=COLOR_BLUE, text_color=COLOR_WHITE, radius=12, **kwargs):
         super().__init__(**kwargs)
         self.background_normal = ""
         self.background_down = ""
-        self.background_color = (0, 0, 0, 0)  # transparent, we draw our own
+        self.background_color = (0, 0, 0, 0)
         self.color = text_color
         self.bold = True
         self._rb_color = bg_color
@@ -148,13 +133,10 @@ class RoundedButton(Button):
 
 
 # ---------------------------------------------------------------------------
-# Connection / "login" screen
+# Connection screen
 # ---------------------------------------------------------------------------
 
 class ConnectScreen(Screen):
-    """First screen the user sees. Lets them type in the Flask server's
-    IP address, tests the connection, and saves it for next time."""
-
     def __init__(self, on_connected, **kwargs):
         super().__init__(**kwargs)
         self.on_connected = on_connected
@@ -166,8 +148,7 @@ class ConnectScreen(Screen):
         root.bind(pos=self._update_bg, size=self._update_bg)
         self._root_layout = root
 
-        # spacer to push the card toward the vertical middle
-        root.add_widget(Widget(size_hint_y=0.1))
+        root.add_widget(Widget(size_hint_y=0.5))
 
         title = Label(
             text="SmartLift",
@@ -178,6 +159,7 @@ class ConnectScreen(Screen):
             height=100,
         )
         root.add_widget(title)
+        root.add_widget(Widget(size_hint_y=None, height=20))
 
         subtitle = Label(
             text="Enter your Flask server's IP address to connect",
@@ -198,7 +180,7 @@ class ConnectScreen(Screen):
 
         self.ip_input = TextInput(
             text=load_saved_ip(),
-            hint_text="e.g. 10.165.149.150",
+            hint_text="e.g. 192.168.18.56",
             multiline=False,
             size_hint_y=None,
             height=95,
@@ -220,13 +202,13 @@ class ConnectScreen(Screen):
         self.status_label = Label(
             text="",
             color=COLOR_RED,
-            font_size=12,
+            font_size=30,
             size_hint_y=None,
-            height=20,
+            height=45,
         )
         root.add_widget(self.status_label)
 
-        root.add_widget(Widget())  # bottom spacer
+        root.add_widget(Widget())
         self.add_widget(root)
 
     def _update_bg(self, *args):
@@ -238,13 +220,9 @@ class ConnectScreen(Screen):
         if not ip:
             self.status_label.text = "Please enter a server IP address."
             return
-
         self.connect_button.text = "Connecting..."
         self.connect_button.disabled = True
         self.status_label.text = ""
-
-        # Run the network check on a slight delay so the button text
-        # actually updates on screen before the (blocking) request fires.
         Clock.schedule_once(lambda dt: self._do_connect_check(ip), 0.05)
 
     def _do_connect_check(self, ip):
@@ -270,24 +248,22 @@ class ConnectScreen(Screen):
 # ---------------------------------------------------------------------------
 
 class FloorRow(RoundedCard):
-    """One row in the floor list: a numbered badge, floor label,
-    and the current waiting count."""
-
     def __init__(self, floor_number, **kwargs):
         super().__init__(orientation="horizontal", padding=16, spacing=10,
-                          size_hint_y=None, height=56, **kwargs)
+                          size_hint_y=None, height=80, **kwargs)
         self.floor_number = floor_number
 
         badge = Label(
             text=str(floor_number),
             color=COLOR_BLUE,
             bold=True,
+            font_size=36,
             size_hint=(None, None),
-            size=(32, 32),
+            size=(50, 50),
         )
         with badge.canvas.before:
             Color(*COLOR_BLUE_LIGHT)
-            self._badge_bg = RoundedRectangle(pos=badge.pos, size=badge.size, radius=[16])
+            self._badge_bg = RoundedRectangle(pos=badge.pos, size=badge.size, radius=[25])
         badge.bind(pos=self._update_badge, size=self._update_badge)
         self._badge_widget = badge
 
@@ -296,6 +272,7 @@ class FloorRow(RoundedCard):
             color=COLOR_TEXT_DARK,
             halign="left",
             valign="middle",
+            font_size=36,
         )
         floor_label.bind(size=floor_label.setter("text_size"))
 
@@ -305,8 +282,9 @@ class FloorRow(RoundedCard):
             bold=True,
             halign="right",
             valign="middle",
+            font_size=36,
             size_hint_x=None,
-            width=50,
+            width=70,
         )
         self.count_label.bind(size=self.count_label.setter("text_size"))
 
@@ -323,51 +301,49 @@ class FloorRow(RoundedCard):
 
 
 class ElevatorCard(RoundedCard):
-    """Top card showing elevator occupancy, weight, and overload status."""
-
     def __init__(self, **kwargs):
         super().__init__(orientation="vertical", padding=18, spacing=10,
-                          size_hint_y=None, height=240, **kwargs)
+                          size_hint_y=None, height=400 , **kwargs)
 
         section_label = Label(
             text="Elevator status",
             color=COLOR_TEXT_GRAY,
-            font_size=13,
+            font_size=36,
             halign="left",
             size_hint_y=None,
-            height=18,
+            height=50,
         )
         section_label.bind(size=section_label.setter("text_size"))
 
         self.status_label = Label(
             text="Available",
             color=COLOR_GREEN,
-            font_size=18,
+            font_size=36,
             bold=True,
             halign="left",
             size_hint_y=None,
-            height=26,
+            height=50,
         )
         self.status_label.bind(size=self.status_label.setter("text_size"))
 
-        stats_row = GridLayout(cols=1, spacing=12, size_hint_y=None, height=120)
+        stats_row = GridLayout(cols=1, spacing=12, size_hint_y=None, height=220)
 
         self.occupants_value = Label(text="--", color=COLOR_TEXT_DARK,
-                                      font_size=22, bold=True, halign="left", valign="top")
+                                      font_size=36, bold=True, halign="left", valign="top")
         self.occupants_value.bind(size=self.occupants_value.setter("text_size"))
         occupants_box = BoxLayout(orientation="vertical")
-        occ_label = Label(text="Occupants", color=COLOR_TEXT_GRAY, font_size=12,
-                           halign="left", size_hint_y=None, height=16)
+        occ_label = Label(text="Occupants", color=COLOR_TEXT_GRAY, font_size=36,
+                           halign="left", size_hint_y=None, height=50)
         occ_label.bind(size=occ_label.setter("text_size"))
         occupants_box.add_widget(occ_label)
         occupants_box.add_widget(self.occupants_value)
 
         self.weight_value = Label(text="--", color=COLOR_TEXT_DARK,
-                                   font_size=22, bold=True, halign="left", valign="top")
+                                   font_size=36, bold=True, halign="left", valign="top")
         self.weight_value.bind(size=self.weight_value.setter("text_size"))
         weight_box = BoxLayout(orientation="vertical")
-        weight_label = Label(text="Weight", color=COLOR_TEXT_GRAY, font_size=12,
-                              halign="left", size_hint_y=None, height=16)
+        weight_label = Label(text="Weight", color=COLOR_TEXT_GRAY, font_size=36,
+                              halign="left", size_hint_y=None, height=50)
         weight_label.bind(size=weight_label.setter("text_size"))
         weight_box.add_widget(weight_label)
         weight_box.add_widget(self.weight_value)
@@ -406,20 +382,18 @@ class ElevatorCard(RoundedCard):
 
 
 class LegendCard(RoundedCard):
-    """Small reference card explaining what each status color means."""
-
     def __init__(self, **kwargs):
         super().__init__(orientation="vertical", padding=16, spacing=8,
-                          size_hint_y=None, height=130, **kwargs)
+                          size_hint_y=None, height=200, **kwargs)
 
         title = Label(
             text="Status guide",
             color=COLOR_TEXT_GRAY,
-            font_size=12,
+            font_size=36,
             bold=True,
             halign="left",
             size_hint_y=None,
-            height=16,
+            height=50,
         )
         title.bind(size=title.setter("text_size"))
         self.add_widget(title)
@@ -431,9 +405,10 @@ class LegendCard(RoundedCard):
         ]
         for label_text, color in rows:
             row = BoxLayout(orientation="horizontal", spacing=10,
-                             size_hint_y=None, height=24)
-            dot = Label(text="\u25cf", color=color, size_hint=(None, None), size=(20, 24))
-            text = Label(text=label_text, color=COLOR_TEXT_DARK, font_size=13,
+                             size_hint_y=None, height=36)
+            dot = Label(text=">", color=color, font_size=36,
+                        size_hint=(None, None), size=(40, 36))
+            text = Label(text=label_text, color=COLOR_TEXT_DARK, font_size=36,
                          halign="left", valign="middle")
             text.bind(size=text.setter("text_size"))
             row.add_widget(dot)
@@ -442,9 +417,6 @@ class LegendCard(RoundedCard):
 
 
 class DashboardScreen(Screen):
-    """Main dashboard: header, elevator card, floor list, legend, and
-    a small 'last updated' caption. Polls the server on a timer."""
-
     def __init__(self, on_change_server, **kwargs):
         super().__init__(**kwargs)
         self.on_change_server = on_change_server
@@ -458,11 +430,11 @@ class DashboardScreen(Screen):
         root.bind(pos=self._update_bg, size=self._update_bg)
         self._root_layout = root
 
-        header_row = BoxLayout(orientation="horizontal", size_hint_y=None, height=32)
+        header_row = BoxLayout(orientation="horizontal", size_hint_y=None, height=52)
         title = Label(
             text="SmartLift",
             color=COLOR_BLUE,
-            font_size=20,
+            font_size=36,
             bold=True,
             halign="left",
             valign="middle",
@@ -473,11 +445,11 @@ class DashboardScreen(Screen):
         change_server_btn = Button(
             text="Change server",
             size_hint=(None, None),
-            size=(120, 30),
+            size=(160, 40),
             background_normal="",
             background_color=(0, 0, 0, 0),
             color=COLOR_BLUE,
-            font_size=12,
+            font_size=26,
         )
         change_server_btn.bind(on_release=lambda *a: self.on_change_server())
         header_row.add_widget(change_server_btn)
@@ -489,10 +461,10 @@ class DashboardScreen(Screen):
         floors_label = Label(
             text="People waiting per floor",
             color=COLOR_TEXT_GRAY,
-            font_size=13,
+            font_size=36,
             halign="left",
             size_hint_y=None,
-            height=20,
+            height=50,
         )
         floors_label.bind(size=floors_label.setter("text_size"))
         root.add_widget(floors_label)
@@ -509,10 +481,10 @@ class DashboardScreen(Screen):
         self.status_caption = Label(
             text="Connecting...",
             color=COLOR_TEXT_GRAY,
-            font_size=11,
+            font_size=26,
             halign="left",
             size_hint_y=None,
-            height=18,
+            height=36,
         )
         self.status_caption.bind(size=self.status_caption.setter("text_size"))
         root.add_widget(self.status_caption)
@@ -608,27 +580,22 @@ class SmartLiftApp(App):
         self.sm.current = "connect"
 
     def _set_android_status_bar_color(self):
-        """Colors the Android status bar to match the app background,
-        instead of leaving it the default solid black. Safe no-op when
-        not running on Android (e.g. desktop testing)."""
         try:
             from jnius import autoclass
             PythonActivity = autoclass('org.kivy.android.PythonActivity')
             WindowManager = autoclass('android.view.WindowManager$LayoutParams')
             AndroidColor = autoclass('android.graphics.Color')
-
             activity = PythonActivity.mActivity
             window = activity.getWindow()
             window.clearFlags(WindowManager.FLAG_TRANSLUCENT_STATUS)
             window.addFlags(WindowManager.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
             bg = COLOR_BG
             android_color = AndroidColor.argb(
                 255, int(bg[0] * 255), int(bg[1] * 255), int(bg[2] * 255)
             )
             window.setStatusBarColor(android_color)
         except Exception:
-            pass  # not on Android — nothing to do
+            pass
 
 
 if __name__ == "__main__":
